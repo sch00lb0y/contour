@@ -59,6 +59,9 @@ func NewAPI(l log.Logger, ds *DataSource) http.Handler {
 	// register grpc trace hooks
 	r.HandleFunc("/debug/requests", trace.Traces)
 	r.HandleFunc("/debug/events", trace.Events)
+
+	// healthz probe
+	r.HandleFunc("/healthz", a.HealthHandler)
 	return a
 }
 
@@ -175,6 +178,16 @@ func (a *jsonAPI) LDS(w http.ResponseWriter, req *http.Request) {
 	}
 
 	a.writeJSON(w, result)
+}
+
+// Health handler will return a status code 200 for health checking
+func (a *jsonAPI) HealthHandler(w http.ResponseWriter, req *http.Request)  {
+	result := struct {
+		Status string `json:"status"`
+	}{
+		Status: "ok"
+	}
+	a.writeJSON(a, result)
 }
 
 // writeJSON encodes v as JSON and writes it to w.
